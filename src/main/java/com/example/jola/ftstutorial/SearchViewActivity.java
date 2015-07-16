@@ -19,15 +19,9 @@ public class SearchViewActivity extends Activity implements SearchView.OnQueryTe
 
     private ListView mListView;
     private SearchView searchView;
-    private CustomersDbAdapter mDbHelper;
+    private DbAdapter mDbHelper;
 
-    private TextView inspectionDate;
-    private TextView customerText;
     private TextView nameText;
-    private TextView addressText;
-    private TextView cityText;
-    private TextView stateText;
-    private TextView zipCodeText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,24 +34,35 @@ public class SearchViewActivity extends Activity implements SearchView.OnQueryTe
         searchView.setOnCloseListener(this);
 
         mListView = (ListView) findViewById(R.id.list);
-      //  inspectionDate = (TextView) findViewById(R.id.inspectionDate);
 
-        mDbHelper = new CustomersDbAdapter(this);
+        mDbHelper = new DbAdapter(this);
         mDbHelper.open();
 
         //Clean all Customers
-        mDbHelper.deleteAllCustomers();
-        //Add some Customer data as a sample
-        mDbHelper.createCustomer("PIZZA1", "Pizza Hut", "1107 West Adams Boulevard", "", "Los Angeles", "CA", "90007");
-        mDbHelper.createCustomer("PIZZA2", "Pizza Hut", "1562 West Pico Boulevard", "", "Los Angeles", "CA", "90015");
-        mDbHelper.createCustomer("PIZZA3", "Pizza Hut", "718 South Los Angeles Street", "", "Los Angeles", "CA", "90014");
-        mDbHelper.createCustomer("PIZZA4", "Pizza Hut", "2542 West Temple Street", "", "Los Angeles", "CA", "90026");
-        mDbHelper.createCustomer("PIZZA5", "Pizza Hut", "4329 North Figueroa Street", "", "Los Angeles", "CA", "90065");
-        mDbHelper.createCustomer("PIZZA6", "Pizza Hut", "4351 South Central Avenue", "", "Los Angeles", "CA", "90011");
-        mDbHelper.createCustomer("SUB1", "Subway", "975 West Jefferson", "", "Los Angeles", "CA", "90007");
-        mDbHelper.createCustomer("SUB2", "Subway", "2805 South Figueroa Street", "", "Los Angeles", "CA", "90007");
-        mDbHelper.createCustomer("SUB3", "Subway", "198 South Vermont Avenue", "", "Los Angeles", "CA", "90004");
-        mDbHelper.createCustomer("SUB4", "Subway", "504 West Olympic Boulevard", "", "Los Angeles", "CA", "90015");
+        mDbHelper.deleteAllItems();
+        //Add search query to database
+        mDbHelper.createItem("Uk?ad nerwowy");
+        mDbHelper.createItem("Neurony");
+        mDbHelper.createItem("Glej");
+        mDbHelper.createItem("Synapsy");
+        mDbHelper.createItem("Podzia? uk?adu nerwowego");
+        mDbHelper.createItem("Mózgowie cz?owieka");
+        mDbHelper.createItem("Rdze? przed?u?ony");
+        mDbHelper.createItem("Ty?omózgowie wtórne");
+        mDbHelper.createItem("Most");
+        mDbHelper.createItem("Mó?d?ek");
+        mDbHelper.createItem("?ródmózgowie");
+        mDbHelper.createItem("Mi?dzymózgowie");
+        mDbHelper.createItem("Podwzgórze");
+        mDbHelper.createItem("Wzgórze");
+        mDbHelper.createItem("Przysadka mózgowa");
+        mDbHelper.createItem("Kresomózowie");
+        mDbHelper.createItem("Kora mózgowa");
+        mDbHelper.createItem("Hipokamp");
+        mDbHelper.createItem("Wyspa");
+        mDbHelper.createItem("J?dra podstawy");
+        mDbHelper.createItem("Spoid?a");
+        mDbHelper.createItem("Komory mózgowe");
 
     }
 
@@ -86,31 +91,22 @@ public class SearchViewActivity extends Activity implements SearchView.OnQueryTe
 
     private void showResults(String query) {
 
-        Cursor cursor = mDbHelper.searchCustomer((query != null ? query.toString() : "@@@@"));
+        Cursor cursor = mDbHelper.searchItem((query != null ? query.toString() : "@@@@"));
 
         if (cursor == null) {
             //
         } else {
             // Specify the columns we want to display in the result
             String[] from = new String[] {
-                    CustomersDbAdapter.KEY_CUSTOMER,
-                    CustomersDbAdapter.KEY_NAME,
-                    CustomersDbAdapter.KEY_ADDRESS,
-                    CustomersDbAdapter.KEY_CITY,
-                    CustomersDbAdapter.KEY_STATE,
-                    CustomersDbAdapter.KEY_ZIP};
+                    DbAdapter.KEY_NAME};
 
             // Specify the Corresponding layout elements where we want the columns to go
-            int[] to = new int[] {     R.id.scustomer,
-                    R.id.sname,
-                    R.id.saddress,
-                    R.id.scity,
-                    R.id.sstate,
-                    R.id.szipCode};
+            int[] to = new int[] {
+                    R.id.sname};
 
             // Create a simple cursor adapter for the definitions and apply them to the ListView
-            SimpleCursorAdapter customers = new SimpleCursorAdapter(this,R.layout.customerresult, cursor, from, to);
-            mListView.setAdapter(customers);
+            SimpleCursorAdapter dbRecord = new SimpleCursorAdapter(this,R.layout.customerresult, cursor, from, to);
+            mListView.setAdapter(dbRecord);
 
             // Define the on-click listener for the list items
             mListView.setOnItemClickListener(new OnItemClickListener() {
@@ -119,12 +115,7 @@ public class SearchViewActivity extends Activity implements SearchView.OnQueryTe
                     Cursor cursor = (Cursor) mListView.getItemAtPosition(position);
 
                     // Get the state's capital from this row in the database.
-                    String customer = cursor.getString(cursor.getColumnIndexOrThrow("customer"));
                     String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
-                    String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
-                    String city = cursor.getString(cursor.getColumnIndexOrThrow("city"));
-                    String state = cursor.getString(cursor.getColumnIndexOrThrow("state"));
-                    String zipCode = cursor.getString(cursor.getColumnIndexOrThrow("zipCode"));
 
                     //Check if the Layout already exists
                     LinearLayout customerLayout = (LinearLayout)findViewById(R.id.customerLayout);
@@ -136,20 +127,10 @@ public class SearchViewActivity extends Activity implements SearchView.OnQueryTe
                     }
 
                     //Get References to the TextViews
-                    customerText = (TextView) findViewById(R.id.customer);
                     nameText = (TextView) findViewById(R.id.name);
-                    addressText = (TextView) findViewById(R.id.address);
-                    cityText = (TextView) findViewById(R.id.city);
-                    stateText = (TextView) findViewById(R.id.state);
-                    zipCodeText = (TextView) findViewById(R.id.zipCode);
 
                     // Update the parent class's TextView
-                    customerText.setText(customer);
                     nameText.setText(name);
-                    addressText.setText(address);
-                    cityText.setText(city);
-                    stateText.setText(state);
-                    zipCodeText.setText(zipCode);
 
                     searchView.setQuery("",true);
                 }
